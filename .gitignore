@@ -20,6 +20,10 @@
 .config/planetscale/
 .config/raycast/
 
+# Full Raycast .rayconfig backups can contain tokens / clipboard history —
+# keep them out of git. Prefer raycast/quicklinks.json (and snippets.json).
+*.rayconfig
+
 # Claude / Codex / Cursor app state (credentials, sessions, caches).
 # Skills live in skills/ and are symlinked into these dirs at setup time.
 .claude/

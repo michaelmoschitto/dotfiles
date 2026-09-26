@@ -6,6 +6,8 @@
 	signingkey = ~/.ssh/id_ed25519.pub
 [gpg]
 	format = ssh
+[gpg "ssh"]
+	allowedSignersFile = ~/.ssh/allowed_signers
 [commit]
 	gpgsign = true
 [pull]
