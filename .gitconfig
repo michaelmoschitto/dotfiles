@@ -1,9 +1,11 @@
 [push]
 	autoSetupRemote = true
 [user]
-	email = cuentomr17@gmail.com
-	name = Matt Cuento
-	signingkey = 68F435624B13E3EA
+	email = mikemoschitto@gmail.com
+	name = michaelmoschitto
+	signingkey = ~/.ssh/id_ed25519.pub
+[gpg]
+	format = ssh
 [commit]
 	gpgsign = true
 [pull]
