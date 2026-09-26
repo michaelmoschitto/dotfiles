@@ -1,0 +1,12 @@
+[
+  {
+    "name": "Dotfiles",
+    "link": "~/projects/dotfiles",
+    "openWith": "Finder",
+    "iconName": "folder-16"
+  },
+  {
+    "name": "GitHub",
+    "link": "https://github.com/michaelmoschitto"
+  }
+]

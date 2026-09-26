@@ -17,7 +17,7 @@ files) into place.
 | Runtimes    | **mise**                     | activated from fish                      |
 | GitHub CLI  | **gh**                       | `.config/gh/`                            |
 | AI skills   | **shared** (Cursor/Claude/Codex) | `skills/`                            |
-| Launcher    | **Raycast**                  | Encrypted export (not tracked)           |
+| Launcher    | **Raycast**                  | `raycast/quicklinks.json` (export)   |
 
 ## Structure
 
@@ -27,10 +27,12 @@ dotfiles/
 ├── .gitignore
 ├── README.md
 ├── skills/                     # DRY AI skills (symlinked into each agent)
-│   ├── shared/                 # linked into Cursor, Claude, and Codex
-│   ├── cursor/                 # Cursor-only
-│   ├── claude/                 # Claude-only
-│   └── codex/                  # Codex-only
+│   ├── shared/
+│   ├── cursor/
+│   ├── claude/
+│   └── codex/
+├── raycast/                    # portable Raycast exports (JSON)
+│   └── quicklinks.json         # from Export Quicklinks (create via UI)
 └── .config/                    # → ~/.config/
     ├── fish/
     │   ├── config.fish
@@ -142,6 +144,12 @@ brew install zellij          # multiplexer (config already in this repo)
 # brew install --cask codex
 ```
 
+Or run the all-in-one script (installs packages, SSH key, fish login shell, symlinks, fisher, nvim):
+
+```bash
+bash ~/projects/dotfiles/setup.sh
+```
+
 ## Per-tool notes
 
 ### Fish (`.config/fish/`)
@@ -187,9 +195,10 @@ Tool-only skills live under `skills/{cursor,claude,codex}/`. See
 
 ### Raycast
 
-Not tracked (tokens + Store extensions). Export Settings & Data from
-Raycast → Settings → Advanced, then import the encrypted `.rayconfig` on a new
-machine.
+Quicklinks (and optionally snippets) are versioned as JSON under
+[`raycast/`](raycast/). Export/import from the Raycast command palette — see
+[`raycast/README.md`](raycast/README.md). Full `.rayconfig` backups stay out of
+git (encrypted, can include secrets).
 
 ### Keyboard
 
