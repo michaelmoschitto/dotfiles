@@ -11,13 +11,13 @@ vim.keymap.set("i", "<C-c>", "<Esc>", { desc = "Exit insert mode" })
 vim.keymap.set("v", "<C-c>", "<Esc>", { desc = "Exit visual mode" })
 vim.keymap.set("c", "<C-c>", "<C-c>", { desc = "Clear command line" })
 
-vim.cmd("iabbrev todo TODO(cuento):")
-vim.cmd("iabbrev note NOTE(cuento):")
-vim.cmd("iabbrev perf PERF(cuento):")
-vim.cmd("iabbrev fixme FIXME(cuento):")
-vim.cmd("iabbrev hack HACK(cuento):")
-vim.cmd("iabbrev safety SAFETY(cuento):")
-vim.cmd("iabbrev invariant INVARIANT(cuento):")
+vim.cmd("iabbrev todo TODO(moschitto):")
+vim.cmd("iabbrev note NOTE(moschitto):")
+vim.cmd("iabbrev perf PERF(moschitto):")
+vim.cmd("iabbrev fixme FIXME(moschitto):")
+vim.cmd("iabbrev hack HACK(moschitto):")
+vim.cmd("iabbrev safety SAFETY(moschitto):")
+vim.cmd("iabbrev invariant INVARIANT(moschitto):")
 
 -- better movement in wrapped text
 vim.keymap.set("n", "j", function()
@@ -40,8 +40,8 @@ vim.keymap.set({ "n", "v" }, "<leader>x", '"_d', { desc = "Delete without yankin
 vim.keymap.set("n", "<leader>bn", ":bnext<CR>", { desc = "Next buffer" })
 vim.keymap.set("n", "<leader>bp", ":bprevious<CR>", { desc = "Previous buffer" })
 
--- macOS-style Option+Left/Right word navigation. Ghostty sends these as
--- modified arrow sequences so they do not collide with Zellij's Alt keys.
+-- Option+Left/Right word navigation (works when the terminal sends Alt+arrows;
+-- in iTerm, enable "Option as Meta" or Esc+ as needed).
 vim.keymap.set({ "n", "x" }, "<A-Left>", "b", { desc = "Previous word" })
 vim.keymap.set({ "n", "x" }, "<A-Right>", "w", { desc = "Next word" })
 vim.keymap.set({ "i", "c" }, "<A-Left>", "<C-Left>", { desc = "Previous word" })
@@ -71,155 +71,6 @@ end, { desc = "Copy full file path" })
 vim.keymap.set("n", "<leader>td", function()
     vim.diagnostic.enable(not vim.diagnostic.is_enabled())
 end, { desc = "Toggle diagnostics" })
-
--- ============================================================================
--- RUST TESTS (cargo nextest) — turbopuffer conventions (see repo README):
---   ct   = cargo nextest run
---   ctdd = cargo nextest run --no-fail-fast --no-capture -p tpuf-engine --test=datadriven_tests
---   REWRITE=1 updates datadriven expected-output files.
--- These complement neotest's <leader>t{r,t,T,l,s,o,...} (nearest/file/cwd),
--- which don't model `-p <crate>` runs or the REWRITE env.
--- ============================================================================
-
--- Workspace root = nearest ancestor containing Cargo.lock (fallback: cwd).
-local function cargo_root()
-    local name = vim.api.nvim_buf_get_name(0)
-    local source = name ~= "" and name or vim.fn.getcwd()
-    return vim.fs.root(source, { "Cargo.lock", ".git" }) or vim.fn.getcwd()
-end
-
--- Parse the [package] name from a single Cargo.toml (nil if it has none).
-local function package_name(toml)
-    local in_package = false
-    for line in io.lines(toml) do
-        local section = line:match("^%s*%[([%w_.-]+)%]")
-        if section then
-            in_package = section == "package"
-        elseif in_package then
-            local pkg = line:match('^%s*name%s*=%s*"([^"]+)"')
-            if pkg then
-                return pkg
-            end
-        end
-    end
-    return nil
-end
-
--- Package name from the nearest Cargo.toml above the current file.
-local function current_crate()
-    local name = vim.api.nvim_buf_get_name(0)
-    local dir = vim.fs.dirname(name ~= "" and name or vim.fn.getcwd())
-    for _, toml in ipairs(vim.fs.find("Cargo.toml", { path = dir, upward = true, limit = 10 })) do
-        local pkg = package_name(toml)
-        if pkg then
-            return pkg
-        end
-    end
-    return nil
-end
-
--- All workspace crate names (from <root>/crates/*/Cargo.toml), for completion.
-local function crate_names()
-    local names = {}
-    for _, toml in ipairs(vim.fn.glob(cargo_root() .. "/crates/*/Cargo.toml", true, true)) do
-        local pkg = package_name(toml)
-        if pkg then
-            names[#names + 1] = pkg
-        end
-    end
-    table.sort(names)
-    return names
-end
-
--- Run `cargo nextest run <args...>` in a floating terminal at the workspace
--- root. interactive=false keeps the output visible after the run finishes.
-local function nextest(args, env)
-    local cmd = vim.list_extend({ "cargo", "nextest", "run" }, args)
-    Snacks.terminal.open(cmd, {
-        cwd = cargo_root(),
-        env = env,
-        interactive = false,
-        win = { position = "float" },
-    })
-end
-
-local dd_args = { "--no-fail-fast", "--no-capture", "-p", "tpuf-engine", "--test=datadriven_tests" }
-
--- :Ct [crate]  — run <crate>'s tests, or the current file's crate if omitted.
---                Tab-completes workspace crate names.
-vim.api.nvim_create_user_command("Ct", function(o)
-    local crate = o.args ~= "" and o.args or current_crate()
-    if not crate then
-        vim.notify("No crate supplied and none detected above this file", vim.log.levels.WARN)
-        return
-    end
-    nextest({ "-p", crate })
-end, {
-    nargs = "?",
-    desc = "cargo nextest run -p <crate>",
-    complete = function(lead)
-        return vim.tbl_filter(function(n)
-            return n:find(lead, 1, true) == 1
-        end, crate_names())
-    end,
-})
-
--- :Ctdd [filter...]         — datadriven tests, optional test-fn filter(s).
--- :CtddRewrite [filter...]  — same, updating expected output (REWRITE=1).
-vim.api.nvim_create_user_command("Ctdd", function(o)
-    nextest(vim.list_extend(vim.deepcopy(dd_args), o.fargs))
-end, { nargs = "*", desc = "datadriven tests (ctdd) [filter...]" })
-
-vim.api.nvim_create_user_command("CtddRewrite", function(o)
-    nextest(vim.list_extend(vim.deepcopy(dd_args), o.fargs), { REWRITE = "1" })
-end, { nargs = "*", desc = "datadriven tests + REWRITE=1 [filter...]" })
-
--- Quick keymaps (defaults / prompt). Commands above let you type the name.
--- Current crate: `cargo nextest run -p <crate>`
-vim.keymap.set("n", "<leader>tp", function()
-    vim.cmd("Ct")
-end, { desc = "Test: current crate (nextest -p)" })
-
--- Datadriven: prompt for an optional filter (empty = all). Mirrors `ctdd`.
-local function run_datadriven(cmd)
-    vim.ui.input({ prompt = "datadriven filter (empty = all): " }, function(filter)
-        if filter == nil then
-            return -- cancelled
-        end
-        vim.cmd(filter == "" and cmd or (cmd .. " " .. filter))
-    end)
-end
-
-vim.keymap.set("n", "<leader>tD", function()
-    run_datadriven("Ctdd")
-end, { desc = "Test: datadriven (ctdd)" })
-
-vim.keymap.set("n", "<leader>tR", function()
-    run_datadriven("CtddRewrite")
-end, { desc = "Test: datadriven REWRITE=1 (update expected)" })
-
--- NOTE: <leader>nn/nf/ns/nt/nw are defined in lua/plugins/obsidian.lua via the
--- plugin's `keys` spec, so obsidian.nvim lazy-loads on first use.
-
--- TODO fix fzf-lua
--- vim.keymap.set("n", "<leader>ff", function()
---     require("fzf-lua").files()
--- end, { desc = "FZF Files" })
--- vim.keymap.set("n", "<leader>fg", function()
---     require("fzf-lua").live_grep()
--- end, { desc = "FZF Live Grep" })
--- vim.keymap.set("n", "<leader>fb", function()
---     require("fzf-lua").buffers()
--- end, { desc = "FZF Buffers" })
--- vim.keymap.set("n", "<leader>fh", function()
---     require("fzf-lua").help_tags()
--- end, { desc = "FZF Help Tags" })
--- vim.keymap.set("n", "<leader>fx", function()
---     require("fzf-lua").diagnostics_document()
--- end, { desc = "FZF Diagnostics Document" })
--- vim.keymap.set("n", "<leader>fX", function()
---     require("fzf-lua").diagnostics_workspace()
--- end, { desc = "FZF Diagnostics Workspace" })
 
 -- ============================================================================
 -- PLUGIN CONFIGS

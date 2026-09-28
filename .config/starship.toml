@@ -6,11 +6,7 @@ $os\
 $username\
 [](bg:color_yellow fg:color_orange)\
 $directory\
-[](fg:color_yellow bg:color_aqua)\
-${custom.jj}\
-[](fg:color_aqua bg:color_blue)\
-$kubernetes\
-[](fg:color_blue bg:color_bg1)\
+[](fg:color_yellow bg:color_bg1)\
 $time\
 [ ](fg:color_bg1)\
 $line_break$character"""
@@ -75,14 +71,6 @@ truncation_symbol = "…/"
 "Pictures" = " "
 "Developer" = "󰲋 "
 
-[custom.jj]
-command = '''jj log -r @ --no-graph --ignore-working-copy -T 'if(bookmarks, bookmarks.join(",") ++ " ") ++ change_id.shortest(8) ++ " " ++ commit_id.shortest(8)' '''
-when = "jj root --ignore-working-copy"
-shell = ["zsh"]
-symbol = "󰊢"
-style = "bg:color_aqua fg:color_fg0"
-format = '[ $symbol $output ]($style)'
-
 [nodejs]
 symbol = ""
 style = "bg:color_blue"
@@ -118,11 +106,6 @@ symbol = ""
 style = "bg:color_blue"
 format = '[[ $symbol( $version) ](fg:color_fg0 bg:color_blue)]($style)'
 
-[java]
-symbol = ""
-style = "bg:color_blue"
-format = '[[ $symbol( $version) ](fg:color_fg0 bg:color_blue)]($style)'
-
 [kotlin]
 symbol = ""
 style = "bg:color_blue"
@@ -137,12 +120,6 @@ format = '[[ $symbol( $version) ](fg:color_fg0 bg:color_blue)]($style)'
 symbol = ""
 style = "bg:color_blue"
 format = '[[ $symbol( $version) ](fg:color_fg0 bg:color_blue)]($style)'
-
-[kubernetes]
-disabled = false
-symbol = "󱃾"
-style = "bg:color_blue"
-format = '[[ $symbol( $context) ](fg:color_fg0 bg:color_blue)]($style)'
 
 [time]
 disabled = false

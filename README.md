@@ -1,308 +1,128 @@
 # Dotfiles
 
-Personal configuration files using the **mirror home directory pattern**: this
-repo mirrors `~` so setup is a matter of symlinking `.config/` (and a couple of
-root-level files) into place.
+Mirror-of-home layout: configs live here and are **symlinked** into `~` / `~/.config`.
 
-## The stack
+## Stack
 
-| Area       | Tool                     | Config location                    |
-| ---------- | ------------------------ | ---------------------------------- |
-| Shell      | **fish** + **Starship**      | `.config/fish/`, `.config/starship.toml` |
-| Multiplexer| **zellij**               | `.config/zellij/config.kdl`        |
-| VCS        | **git** + **jujutsu (jj)** | `.gitconfig`, `.config/jj/config.toml` |
-| Editor     | **Neovim** (LazyVim)     | `.config/nvim/`                    |
-| Terminal   | **Ghostty**              | `.config/ghostty/`                 |
-| Keyboard   | **ZSA Voyager**          | [Oryx layout](https://configure.zsa.io/voyager/layouts/ZGdl5/latest/0) |
-| GitHub CLI | **gh**                   | `.config/gh/`                      |
-| AI skills  | **Claude + Codex**       | `.claude/skills/`, `.codex/skills/` |
-| Launcher   | **Raycast**              | Encrypted settings export (not tracked) |
+| Area | Tool | Location |
+| ---- | ---- | -------- |
+| Shell | fish + Starship | `.config/fish/`, `.config/starship.toml` |
+| Runtimes | mise | `.config/mise/config.toml` |
+| Editor | Neovim (LazyVim) | `.config/nvim/` |
+| VCS | git (SSH-signed) | `.gitconfig` |
+| Terminal | iTerm2 | not tracked (see notes) |
+| Keyboard | ZSA Moonlander | Oryx link (add yours below) |
+| GitHub | gh | `.config/gh/` |
+| AI skills | shared → Cursor/Claude/Codex | `skills/` |
+| Launcher | Raycast | `raycast/quicklinks.json` |
+| Multiplexer | zellij (optional) | `.config/zellij/` |
 
-> Migrated from a zsh + tmux + iTerm2 + hand-rolled Neovim setup. Legacy
-> configs are intentionally omitted from the current root snapshot.
-
-## Structure
+## Layout
 
 ```
 dotfiles/
-├── .gitconfig                  # → ~/.gitconfig (identity + GPG signing)
-├── .gitignore                  # Excludes machine-specific/transient files
-├── README.md
-├── .claude/skills/             # portable Claude skills
-├── .codex/skills/              # portable Codex skills (not managed .system skills)
-└── .config/                    # → ~/.config/
-    ├── fish/                   # fish shell (lockfile-only, see below)
-    │   ├── config.fish
-    │   └── fish_plugins        # fisher plugin manifest
-    ├── starship.toml           # shell prompt
-    ├── zellij/
-    │   └── config.kdl
-    ├── jj/
-    │   └── config.toml
-    ├── k9s/
-    │   ├── config.yaml
-    │   └── skins/
-    ├── ghostty/
-    │   ├── config
-    │   └── shaders/
-    │       └── shader.glsl      # custom terminal shader
-    ├── nvim/                   # LazyVim
-    │   ├── init.lua
-    │   ├── lazy-lock.json      # plugin lockfile
-    │   └── lua/{config,plugins}/
-    ├── gh/
-    │   └── config.yml
-    └── gh-dash/
-        └── config.yml
+├── setup.sh                 # one-shot bootstrap
+├── .gitconfig               # → ~/.gitconfig
+├── .zshrc                   # stub only (interactive shell is fish)
+├── skills/{shared,cursor,claude,codex}/
+├── raycast/quicklinks.json
+└── .config/
+    ├── fish/                # config.fish + fish_plugins
+    ├── mise/config.toml
+    ├── starship.toml
+    ├── nvim/                # LazyVim
+    ├── zellij/              # optional
+    └── gh/config.yml
 ```
 
-## Fresh machine setup
-
-Start with Apple's command-line tools and Homebrew:
+## Setup
 
 ```bash
-# 1. macOS build tools and Homebrew
-xcode-select --install
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-
-# 2. Core tools required by these dotfiles
-brew install fish starship zellij jj jjui neovim gh \
-             fzf zoxide eza bat ripgrep fd jq fx \
-             gnupg pinentry-mac stylua tuicr cormacrelf/tap/dark-notify \
-             bottom shfmt shellcheck yq dust direnv mergiraf
-brew install --cask ghostty raycast bitwarden font-fira-code-nerd-font codex
-
-# 3. Install Pi
-curl -fsSL https://pi.dev/install.sh | sh
-
-# Restart the shell so Pi's install directory is on PATH, then install packages.
-pi install npm:pi-claude-bridge
-
-# 4. Make fish the login shell
-echo (which fish) | sudo tee -a /etc/shells
-chsh -s (which fish)
-
-# 5. Clone, initialize jj, and link each managed tool
-git clone https://github.com/mattcuento/dotfiles.git ~/.dotfiles
-cd ~/.dotfiles && jj git init --colocate
-mkdir -p ~/.config ~/.config/gh
-mkdir -p ~/.claude/skills ~/.codex/skills
-ln -s ~/.dotfiles/.config/fish ~/.config/fish
-ln -s ~/.dotfiles/.config/starship.toml ~/.config/starship.toml
-ln -s ~/.dotfiles/.config/ghostty ~/.config/ghostty
-ln -s ~/.dotfiles/.config/jj ~/.config/jj
-ln -s ~/.dotfiles/.config/k9s ~/.config/k9s
-ln -s ~/.dotfiles/.config/nvim ~/.config/nvim
-ln -s ~/.dotfiles/.config/zellij ~/.config/zellij
-ln -s ~/.dotfiles/.config/gh/config.yml ~/.config/gh/config.yml
-ln -s ~/.dotfiles/.config/gh-dash ~/.config/gh-dash
-ln -s ~/.dotfiles/.gitconfig ~/.gitconfig
-ln -s ~/.dotfiles/.claude/skills/gh-stack ~/.claude/skills/gh-stack
-ln -s ~/.dotfiles/.claude/skills/jj ~/.claude/skills/jj
-ln -s ~/.dotfiles/.codex/skills/gh-stack ~/.codex/skills/gh-stack
-ln -s ~/.dotfiles/.codex/skills/jj ~/.codex/skills/jj
-ln -s ~/.dotfiles/.codex/skills/tuicr ~/.codex/skills/tuicr
-
-# 6. Install fish plugins (fisher reads fish_plugins)
-curl -sL https://raw.githubusercontent.com/jorgebucaran/fisher/main/functions/fisher.fish | source
-fisher update
-
-# 7. First nvim launch installs LazyVim plugins; authenticate gh and install extensions
-nvim +qa
-gh auth login
-gh extension install dlvhdr/gh-dash
-
-# 8. Import the latest encrypted .rayconfig backup in Raycast
-# Raycast → Settings → Advanced → Import
+git clone https://github.com/michaelmoschitto/dotfiles.git ~/projects/dotfiles
+bash ~/projects/dotfiles/setup.sh
 ```
 
-### Language toolchains
+The script installs core brew packages, creates an SSH key + Keychain entry,
+sets fish as the login shell, symlinks configs, runs fisher, and boots nvim.
 
-Rust is managed with `rustup`, which is the upstream-recommended installer,
-rather than Homebrew's versioned `rust` formula:
+**After setup**
+
+1. Paste `~/.ssh/id_ed25519.pub` into GitHub twice: **Authentication** + **Signing**  
+   (`pbcopy < ~/.ssh/id_ed25519.pub` → [SSH keys](https://github.com/settings/ssh/new))
+2. iTerm → Profiles → Text → font **FiraCode Nerd Font**
+3. iTerm → Profiles → Keys → Left/Right Option → **Esc+** (Alt for fish/nvim/zellij)
+4. Cursor terminal is set to fish in user settings; open a new terminal tab
+
+**Optional**
 
 ```bash
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-rustup default stable
-rustup component add rustfmt clippy rust-analyzer rust-src
-brew install cargo-nextest
+brew install zellij
+mise use -g bun@latest          # updates .config/mise/config.toml — commit it
+# Raycast → Export Quicklinks → raycast/quicklinks.json
 ```
 
-Install the other toolchains needed for current projects:
+## Notes
 
-```bash
-brew install go uv pnpm openjdk@21
-```
+### Fish
 
-Node is currently managed outside Homebrew with `nvm`; install the current LTS
-release through `nvm` before running `pnpm`. Avoid installing a second Node
-version manager unless intentionally migrating away from `nvm`.
+Lockfile-only: `config.fish` + `fish_plugins`. Fisher fills the rest (`fisher update`).
 
-Use one Java distribution. This setup standardizes on Homebrew's `openjdk@21`;
-do not also install Temurin unless a project specifically requires it.
+| You type | Becomes |
+| -------- | ------- |
+| `cd` | `z` (zoxide) |
+| `ls` / `ll` | `eza` |
+| `cat` | `bat` |
+| `vim` | `nvim` |
+| `grep` | `rg` |
+| `top` / `du` | `btm` / `dust` |
 
-### Optional workstation packages
+Also: fzf.fish (Ctrl+R history, etc.) and `g…` git abbrs from plugin-git.
 
-These are installed on the current Mac but are workload-specific rather than
-required by the dotfiles:
+### mise
 
-```bash
-# Containers, Kubernetes, and cloud tooling
-brew install docker kubernetes-cli helm kubie derailed/k9s/k9s awscli
-brew install --cask gcloud-cli
+Activated from fish. Global versions live in `.config/mise/config.toml`.  
+`mise use -g <tool>@<ver>` → commit the file.
 
-# Other GUI/developer applications present on the current Mac
-brew install --cask google-chrome claude-code@latest
-```
+### Git
 
-That's it — Fish, Starship, `git`, `jj`, Zellij, and Ghostty are configured the
-moment their symlinks exist. `.gitignore` keeps the plugin/runtime files those
-tools write back (fisher plugins, `jj/repos/`, nvim data) out of version
-control.
+SSH commit signing (`gpg.format = ssh`). Keychain via `ssh-add --apple-use-keychain`.  
+No GPG Suite.
 
-## Per-tool notes
+### Neovim
 
-### Fish (`.config/fish/`)
+LazyVim. Extras: snacks picker, neo-tree, dial, languages (go/rust/python/ts/sql/… — no Java), Claude Code, octo, neotest.
 
-Tracked **lockfile-only**: `config.fish` and `fish_plugins`. Everything else
-under `functions/`, `conf.d/`, `completions/`, and `themes/` is installed by
-[fisher](https://github.com/jorgebucaran/fisher) and is gitignored
-(re-downloadable).
+| Keys | Action |
+| ---- | ------ |
+| `Space Space` | Find files |
+| `Space e` | File tree |
+| `Space /` | Grep project |
+| `Space B` / `Space 1..9` | Harpoon add / jump |
 
-Starship is installed with Homebrew, initialized by `config.fish`, and
-configured by `.config/starship.toml`.
+Press `Space` alone for the which-key menu. Obsidian is stubbed until you set a vault path.
 
-Plugins pulled in via `fish_plugins`: `fisher`, `patrickf1/fzf.fish`,
-`catppuccin/fish` (theme), `jhillyerd/plugin-git`, `kapsmudit/plugin-jj`.
+### Skills & Raycast
 
-`config.fish` sets up zoxide, option-key word navigation (tuned to avoid
-colliding with zellij), and abbreviations (`vim→nvim`, `ls→eza`, `cat→bat`,
-`cd→z`, `grep→rg`, plus `cargo nextest` and `kubectl` shortcuts).
-
-### Zellij (`.config/zellij/config.kdl`)
-
-`*.bak` backups that zellij writes next to the config are gitignored.
-
-### jj + git (`.config/jj/config.toml`, `.gitconfig`)
-
-`jj/config.toml` holds identity, GPG commit signing, and a `wa` alias for
-workspace-add. Per-repo state under `.config/jj/repos/` is gitignored.
-`.gitconfig` configures identity and GPG signing (`signingkey` is a public key
-ID, safe to commit).
-
-### Neovim (`.config/nvim/`) — LazyVim
-
-Standard [LazyVim](https://www.lazyvim.org/) layout: `lua/config/` for core
-settings, `lua/plugins/` for plugin specs (gruvbox, mini, multicursor,
-obsidian, ...). `lazy-lock.json` pins versions; plugin data lives in
-`~/.local/share/nvim/` (outside this repo).
-
-**LazyVim extras enabled** (in `lazyvim.json`):
-
-| Category | Extra                | What it adds                          |
-| -------- | -------------------- | ------------------------------------- |
-| AI       | `ai.claudecode`      | Claude Code integration               |
-| Editor   | `editor.dial`        | Smart increment/decrement (`<C-a>/<C-x>`) |
-| Editor   | `editor.fzf`         | fzf-lua as the fuzzy finder           |
-| Editor   | `editor.inc-rename`  | Incremental LSP rename with live preview |
-| Editor   | `editor.snacks_picker` | snacks.nvim picker                  |
-| Lang     | `lang.go`            | Go (gopls, formatting, DAP)           |
-| Lang     | `lang.java`          | Java (jdtls)                          |
-| Lang     | `lang.json`          | JSON schemas + LSP                    |
-| Lang     | `lang.markdown`      | Markdown tooling                      |
-| Lang     | `lang.python`        | Python (pyright/ruff, DAP)            |
-| Lang     | `lang.rust`          | Rust (rust-analyzer, crates)          |
-| Lang     | `lang.sql`           | SQL LSP + formatting                  |
-| Lang     | `lang.toml`          | TOML LSP                              |
-| Lang     | `lang.typescript`    | TypeScript/JavaScript                 |
-| Lang     | `lang.yaml`          | YAML schemas + LSP                    |
-| Test     | `test.core`          | neotest test runner                   |
-| Util     | `util.dot`           | Dotfiles editing helpers              |
-| Util     | `util.octo`          | GitHub issues/PRs via octo.nvim       |
-
-Manage these with `:LazyExtras` inside Neovim.
-
-### Ghostty (`.config/ghostty/`)
-
-Fira Code Mono, size 12, `copy-on-select`, `macos-option-as-alt`. Extra themes
-are listed as commented-out lines to switch between. Custom shaders live in
-`.config/ghostty/shaders/` and are included automatically by the directory
-symlink; the active shader is selected with `custom-shader` in `config`.
+- `skills/shared/` → symlinked into Cursor, Claude, and Codex (DRY)
+- Quicklinks: edit/import `raycast/quicklinks.json` — see [`raycast/README.md`](raycast/README.md)
 
 ### Keyboard
 
-The current keyboard is a **ZSA Voyager**. Its personalized keymap is published
-in [Oryx](https://configure.zsa.io/voyager/layouts/ZGdl5/latest/0).
+ZSA Moonlander — add Oryx URL here when ready.
 
-### K9s (`.config/k9s/`)
+## Updating
 
-Fish sets `K9S_CONFIG_DIR=~/.config/k9s`, overriding K9s's macOS default under
-`~/Library/Application Support`. The global config and skins are tracked;
-runtime files generated alongside them are ignored.
-
-### Raycast
-
-Raycast state is intentionally not symlinked or committed. Its local config
-contains access tokens, and installed Store extensions are generated runtime
-data. Before migrating devices, use **Export Settings & Data** in Raycast
-Settings → Advanced and save the encrypted `.rayconfig` backup somewhere
-secure. On the new device, install Raycast and import that backup; it restores
-installed Store extensions, hotkeys, aliases, preferences, and other selected
-Raycast data.
-
-### Claude and Codex skills
-
-User-authored skills are tracked under `.claude/skills/` and `.codex/skills/`
-and linked individually during setup. Codex's `.system` skills and all other
-Claude/Codex application state are intentionally excluded because they are
-managed by the applications and may contain credentials or session data.
-
-### Pi
-
-Pi stores global state under `~/.pi/agent/`. Package declarations are recorded
-in `settings.json`, while downloaded npm packages live under
-`~/.pi/agent/npm/`. Use `pi list` to see packages registered in settings and
-inspect `~/.pi/agent/npm/package.json` to see their resolved npm dependencies.
-
-Do not track `~/.pi`: it also contains `auth.json`, session history, model
-caches, and generated package data. The fresh-machine setup above is the
-portable package manifest; add another `pi install <source>` line there whenever
-you adopt a new global Pi package. Use `pi install -l <source>` only when a
-package belongs to one project, since that writes the declaration to the
-project's `.pi/settings.json` instead.
-
-## Updating & installing
-
-Because everything is symlinked, edits are live immediately — edit the files in
-this repo (or in `~/.config/...`, same thing) and commit.
+Edits apply live through symlinks:
 
 ```bash
-# Fetch and start a new working change on the latest main
-cd ~/.dotfiles
-jj git fetch
-jj new main@origin
-
-# Save local changes back
-jj commit -m "Update <tool> config"
-jj bookmark set main -r @-
-jj git push -b main
-
-# Update fish plugins (after editing fish_plugins)
-fisher update
-
-# Update Neovim plugins, then commit the refreshed lockfile
-nvim +"Lazy sync" +qa
-jj commit -m "nvim: bump plugins"
-jj bookmark set main -r @-
-jj git push -b main
-
+cd ~/projects/dotfiles
+# edit…
+git add -A && git commit -m "Update <tool>" && git push
+fisher update                 # after fish_plugins changes
+nvim +"Lazy sync" +qa         # after plugin changes
 ```
 
-## What's intentionally not tracked
+## Not tracked
 
-- Fisher-installed fish files (reinstall with `fisher update`)
-- Neovim plugin data (`~/.local/share/nvim/`)
-- jj per-repo state (`.config/jj/repos/`)
-- Zellij `*.bak` backups
-- Raycast runtime data and access tokens (migrate with encrypted export/import)
-- Secrets / auth tokens (gh stores its token in the system keychain)
+Fisher install trees · Neovim plugin data · Zellij `*.bak` · Raycast `.rayconfig` /
+tokens · Claude/Codex/Cursor app state · secrets (gh uses Keychain)

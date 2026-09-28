@@ -1,15 +1,11 @@
 # Dotfiles Repository - .gitignore
-# This repository contains portable configuration files.
-# Machine-specific and transient files are excluded.
+# Portable configuration only. Machine-specific and transient files are excluded.
 
 # ============================================
 # System Files
 # ============================================
 
-# macOS system files
 .DS_Store
-
-# Editor backup files
 *~
 *.swp
 *.swo
@@ -24,31 +20,21 @@
 .config/planetscale/
 .config/raycast/
 
-# Pi keeps auth tokens, sessions, caches, and downloaded packages here.
-# Reinstall the portable package list from README.md instead of tracking state.
-.pi/
+# Full Raycast .rayconfig backups can contain tokens / clipboard history —
+# keep them out of git. Prefer raycast/quicklinks.json (and snippets.json).
+*.rayconfig
 
-# Claude and Codex contain credentials, sessions, caches, and managed skills.
-# Track only the explicitly selected, user-authored skill directories.
-.claude/*
-!.claude/skills/
-.claude/skills/*
-!.claude/skills/gh-stack/
-!.claude/skills/jj/
-
-.codex/*
-!.codex/skills/
-.codex/skills/*
-!.codex/skills/gh-stack/
-!.codex/skills/jj/
-!.codex/skills/tuicr/
+# Claude / Codex / Cursor app state (credentials, sessions, caches).
+# Skills live in skills/ and are symlinked into these dirs at setup time.
+.claude/
+.codex/
+.cursor/
 
 # ============================================
 # Fish - Lockfile-only tracking
 # ============================================
 # Track only the source of truth; the rest is installed by fisher.
-# On a new machine, run `fisher update` to reinstall everything in
-# fish_plugins (fzf.fish, catppuccin, plugin-git, plugin-jj, ...).
+# On a new machine, run `fisher update` to reinstall everything in fish_plugins.
 #
 # fish_variables (universal-variable state) is intentionally NOT tracked.
 .config/fish/*
@@ -59,33 +45,21 @@
 # Zellij
 # ============================================
 
-# Auto-generated config backups
 .config/zellij/*.bak
 .config/zellij/*.bak.*
-
-# ============================================
-# Jujutsu (jj)
-# ============================================
-
-# Per-repository state (not portable)
-.config/jj/repos/
-
-# ============================================
-# K9s - Portable config and skins only
-# ============================================
-
-.config/k9s/*
-!.config/k9s/config.yaml
-!.config/k9s/skins/
 
 # ============================================
 # Neovim - Plugin and Runtime Data
 # ============================================
 
-# Plugin data lives in ~/.local/share/nvim/lazy/ (outside this config).
-# Test/scratch artifacts (mirrors .config/nvim/.gitignore):
 .config/nvim/.tests/
 .config/nvim/.repro/
 .config/nvim/doc/tags
 .config/nvim/data/
 .config/nvim/*.log
+
+# ============================================
+# mise
+# ============================================
+# Local/trusted config and caches stay on the machine.
+.config/mise/config.local.toml

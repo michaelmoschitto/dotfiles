@@ -1,6 +1,11 @@
+-- Obsidian is disabled until a personal vault path is set.
+-- To enable: uncomment the return table below and set workspaces[].path.
+return {}
+
+--[[
 return {
     "obsidian-nvim/obsidian.nvim",
-    version = "*", -- use latest release
+    version = "*",
     lazy = true,
     ft = "markdown",
     dependencies = {
@@ -9,8 +14,8 @@ return {
     opts = {
         workspaces = {
             {
-                name = "cuentonotes",
-                path = "~/Documents/cuentonotes", -- change to your vault path
+                name = "notes",
+                path = "~/Documents/notes", -- change to your vault path
             },
         },
         picker = { name = "fzf-lua" },
@@ -23,3 +28,4 @@ return {
         { "<leader>nw", "<cmd>Obsidian workspace<cr>", desc = "Switch workspace" },
     },
 }
+--]]
