@@ -1,12 +1,15 @@
 starship init fish | source
 
+# Runtimes (node, bun, …) — single source of truth via mise
+if type -q mise
+    mise activate fish | source
+end
+
+# Docker Desktop CLI (was previously only in ~/.zprofile)
+fish_add_path ~/.docker/bin
+
 if status is-interactive
     zoxide init fish | source
-
-    # mise: language/runtime version manager
-    if type -q mise
-        mise activate fish | source
-    end
 end
 
 abbr -a -- vim nvim
