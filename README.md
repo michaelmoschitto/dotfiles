@@ -9,29 +9,29 @@ Mirror-of-home layout: configs live here and are **symlinked** into `~` / `~/.co
 | Shell | fish + Starship | `.config/fish/`, `.config/starship.toml` |
 | Runtimes | mise | `.config/mise/config.toml` |
 | Editor | Neovim (LazyVim) | `.config/nvim/` |
-| VCS | git (SSH-signed) | `.gitconfig` |
-| Terminal | iTerm2 | not tracked (see notes) |
-| Keyboard | ZSA Moonlander | Oryx link (add yours below) |
+| VCS | git (SSH-signed commits) | `.gitconfig` |
+| Terminal | iTerm2 | profile settings in the app |
+| Keyboard | ZSA Moonlander | hardware layout in Oryx |
 | GitHub | gh | `.config/gh/` |
-| AI skills | shared → Cursor/Claude/Codex | `skills/` |
+| AI skills | Cursor / Claude / Codex | `skills/` |
 | Launcher | Raycast | `raycast/quicklinks.json` |
-| Multiplexer | zellij (optional) | `.config/zellij/` |
+| Multiplexer | zellij | `.config/zellij/` |
 
 ## Layout
 
 ```
 dotfiles/
-├── setup.sh                 # one-shot bootstrap
+├── setup.sh
 ├── .gitconfig               # → ~/.gitconfig
-├── .zshrc                   # stub only (interactive shell is fish)
+├── .zshrc                   # → ~/.zshrc (non-fish fallback)
 ├── skills/{shared,cursor,claude,codex}/
 ├── raycast/quicklinks.json
 └── .config/
     ├── fish/                # config.fish + fish_plugins
     ├── mise/config.toml
     ├── starship.toml
-    ├── nvim/                # LazyVim
-    ├── zellij/              # optional
+    ├── nvim/
+    ├── zellij/
     └── gh/config.yml
 ```
 
@@ -42,33 +42,37 @@ git clone https://github.com/michaelmoschitto/dotfiles.git ~/projects/dotfiles
 bash ~/projects/dotfiles/setup.sh
 ```
 
-The script installs core brew packages, creates an SSH key + Keychain entry,
-sets fish as the login shell, symlinks configs, runs fisher, and boots nvim.
+`setup.sh` installs core brew packages, creates an SSH key and loads it into
+Keychain, sets fish as the login shell, symlinks this repo into place, runs
+fisher, and launches nvim once.
 
-**After setup**
+Then:
 
-1. Paste `~/.ssh/id_ed25519.pub` into GitHub twice: **Authentication** + **Signing**  
-   (`pbcopy < ~/.ssh/id_ed25519.pub` → [SSH keys](https://github.com/settings/ssh/new))
-2. iTerm → Profiles → Text → font **FiraCode Nerd Font**
-3. iTerm → Profiles → Keys → Left/Right Option → **Esc+** (Alt for fish/nvim/zellij)
-4. Cursor terminal is set to fish in user settings; open a new terminal tab
+1. Add `~/.ssh/id_ed25519.pub` on GitHub as an **Authentication** key and a
+   **Signing** key ([SSH keys](https://github.com/settings/ssh/new)).
+2. iTerm → Profiles → Text → **FiraCode Nerd Font**.
+3. iTerm → Profiles → Keys → Left/Right Option → **Esc+**.
+4. Open a new Cursor terminal tab (defaults to fish).
 
-**Optional**
+Runtimes and extras as needed:
 
 ```bash
+mise use -g bun@latest
 brew install zellij
-mise use -g bun@latest          # updates .config/mise/config.toml — commit it
-# Raycast → Export Quicklinks → raycast/quicklinks.json
 ```
+
+Raycast Quicklinks: **Export Quicklinks** into `raycast/quicklinks.json`, or
+**Import Quicklinks** from that file on a new machine.
 
 ## Notes
 
 ### Fish
 
-Lockfile-only: `config.fish` + `fish_plugins`. Fisher fills the rest (`fisher update`).
+Tracked files: `config.fish` and `fish_plugins`. Fisher installs the rest
+(`fisher update`).
 
-| You type | Becomes |
-| -------- | ------- |
+| Abbreviation | Expands to |
+| ------------ | ---------- |
 | `cd` | `z` (zoxide) |
 | `ls` / `ll` | `eza` |
 | `cat` | `bat` |
@@ -76,21 +80,23 @@ Lockfile-only: `config.fish` + `fish_plugins`. Fisher fills the rest (`fisher up
 | `grep` | `rg` |
 | `top` / `du` | `btm` / `dust` |
 
-Also: fzf.fish (Ctrl+R history, etc.) and `g…` git abbrs from plugin-git.
+Also loaded: fzf.fish and plugin-git (`g…` git abbreviations).
 
 ### mise
 
-Activated from fish. Global versions live in `.config/mise/config.toml`.  
-`mise use -g <tool>@<ver>` → commit the file.
+Activated from fish. Global tool versions are in `.config/mise/config.toml`.
+`mise use -g <tool>@<ver>` updates that file.
 
 ### Git
 
-SSH commit signing (`gpg.format = ssh`). Keychain via `ssh-add --apple-use-keychain`.  
-No GPG Suite.
+Commits are signed with SSH (`gpg.format = ssh`). The signing key passphrase is
+stored in the macOS Keychain via `ssh-add --apple-use-keychain`.
 
 ### Neovim
 
-LazyVim. Extras: snacks picker, neo-tree, dial, languages (go/rust/python/ts/sql/… — no Java), Claude Code, octo, neotest.
+LazyVim with snacks picker, neo-tree, dial, Harpoon, multicursor, Claude Code,
+octo, neotest, and language support for Go, Rust, Python, TypeScript, SQL,
+JSON, YAML, and Markdown.
 
 | Keys | Action |
 | ---- | ------ |
@@ -98,31 +104,28 @@ LazyVim. Extras: snacks picker, neo-tree, dial, languages (go/rust/python/ts/sql
 | `Space e` | File tree |
 | `Space /` | Grep project |
 | `Space B` / `Space 1..9` | Harpoon add / jump |
+| `Space` | which-key menu |
 
-Press `Space` alone for the which-key menu. Obsidian is stubbed until you set a vault path.
+### Skills
 
-### Skills & Raycast
+`skills/shared/` is symlinked into Cursor, Claude, and Codex. Tool-specific
+skills live under `skills/{cursor,claude,codex}/`.
 
-- `skills/shared/` → symlinked into Cursor, Claude, and Codex (DRY)
-- Quicklinks: edit/import `raycast/quicklinks.json` — see [`raycast/README.md`](raycast/README.md)
+### Raycast
 
-### Keyboard
-
-ZSA Moonlander — add Oryx URL here when ready.
+Quicklinks are stored as JSON in `raycast/`. See [`raycast/README.md`](raycast/README.md).
 
 ## Updating
 
-Edits apply live through symlinks:
-
 ```bash
 cd ~/projects/dotfiles
-# edit…
 git add -A && git commit -m "Update <tool>" && git push
-fisher update                 # after fish_plugins changes
-nvim +"Lazy sync" +qa         # after plugin changes
+fisher update
+nvim +"Lazy sync" +qa
 ```
 
 ## Not tracked
 
-Fisher install trees · Neovim plugin data · Zellij `*.bak` · Raycast `.rayconfig` /
-tokens · Claude/Codex/Cursor app state · secrets (gh uses Keychain)
+Fisher-installed fish files, Neovim plugin data (`~/.local/share/nvim/`),
+Zellij backups, Raycast `.rayconfig` / tokens, Claude/Codex/Cursor app state,
+and secrets (gh uses the system Keychain).
