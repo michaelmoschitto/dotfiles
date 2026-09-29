@@ -1,231 +1,130 @@
 # Dotfiles
 
-Personal configuration using the **mirror home directory pattern**: this repo
-mirrors `~`, so setup is symlinking `.config/` (and a couple of root-level
-files) into place.
+Mirror-of-home layout: configs live here and are **symlinked** into `~` / `~/.config`.
 
-## The stack
+## Stack
 
-| Area        | Tool                         | Config location                          |
-| ----------- | ---------------------------- | ---------------------------------------- |
-| Shell       | **fish** + **Starship**      | `.config/fish/`, `.config/starship.toml` |
-| Multiplexer | **zellij** (optional)        | `.config/zellij/config.kdl`              |
-| VCS         | **git** (SSH-signed commits) | `.gitconfig`                             |
-| Editor      | **Neovim** (LazyVim)         | `.config/nvim/`                          |
-| Terminal    | **iTerm2**                   | Profiles in iTerm (not tracked)          |
-| Keyboard    | **ZSA Moonlander**           | Oryx layout (add your URL here)          |
-| Runtimes    | **mise**                     | activated from fish                      |
-| GitHub CLI  | **gh**                       | `.config/gh/`                            |
-| AI skills   | **shared** (Cursor/Claude/Codex) | `skills/`                            |
-| Launcher    | **Raycast**                  | `raycast/quicklinks.json` (export)   |
+| Area | Tool | Location |
+| ---- | ---- | -------- |
+| Shell | fish + Starship | `.config/fish/`, `.config/starship.toml` |
+| Runtimes | mise | `.config/mise/config.toml` |
+| Editor | Neovim (LazyVim) | `.config/nvim/` |
+| VCS | git (SSH-signed) | `.gitconfig` |
+| Terminal | iTerm2 | not tracked (see notes) |
+| Keyboard | ZSA Moonlander | Oryx link (add yours below) |
+| GitHub | gh | `.config/gh/` |
+| AI skills | shared → Cursor/Claude/Codex | `skills/` |
+| Launcher | Raycast | `raycast/quicklinks.json` |
+| Multiplexer | zellij (optional) | `.config/zellij/` |
 
-## Structure
+## Layout
 
 ```
 dotfiles/
-├── .gitconfig                  # → ~/.gitconfig (identity + SSH signing)
-├── .gitignore
-├── README.md
-├── skills/                     # DRY AI skills (symlinked into each agent)
-│   ├── shared/
-│   ├── cursor/
-│   ├── claude/
-│   └── codex/
-├── raycast/                    # portable Raycast exports (JSON)
-│   └── quicklinks.json         # from Export Quicklinks (create via UI)
-└── .config/                    # → ~/.config/
-    ├── fish/
-    │   ├── config.fish
-    │   └── fish_plugins
+├── setup.sh                 # one-shot bootstrap
+├── .gitconfig               # → ~/.gitconfig
+├── .zshrc                   # stub only (interactive shell is fish)
+├── skills/{shared,cursor,claude,codex}/
+├── raycast/quicklinks.json
+└── .config/
+    ├── fish/                # config.fish + fish_plugins
+    ├── mise/config.toml
     ├── starship.toml
-    ├── zellij/                 # optional; install zellij when you want it
-    │   └── config.kdl
-    ├── nvim/                   # LazyVim
-    └── gh/
-        └── config.yml
+    ├── nvim/                # LazyVim
+    ├── zellij/              # optional
+    └── gh/config.yml
 ```
 
-## Fresh machine setup
+## Setup
 
 ```bash
-# 1. macOS build tools and Homebrew
-xcode-select --install
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-
-# 2. Core tools
-brew install fish starship neovim gh mise \
-             fzf zoxide eza bat ripgrep fd jq bottom dust
-brew install --cask raycast font-fira-code-nerd-font iterm2
-
-# 3. SSH key + Keychain (skip if you already have ~/.ssh/id_ed25519)
-ssh-keygen -t ed25519 -C "mikemoschitto@gmail.com" -f ~/.ssh/id_ed25519
-/usr/bin/ssh-add --apple-use-keychain ~/.ssh/id_ed25519
-
-# Upload the public key twice on GitHub → Settings → SSH and GPG keys:
-#   - Authentication Key  (git push/pull)
-#   - Signing Key         (Verified commits)
-# pbcopy < ~/.ssh/id_ed25519.pub
-
-# Optional: local signature verification
-mkdir -p ~/.ssh
-echo "mikemoschitto@gmail.com $(cat ~/.ssh/id_ed25519.pub)" >> ~/.ssh/allowed_signers
-# Then add to ~/.gitconfig (or keep in the linked copy):
-#   [gpg "ssh"]
-#     allowedSignersFile = ~/.ssh/allowed_signers
-
-# 4. Make fish the login shell
-FISH="$(which fish)"
-echo "$FISH" | sudo tee -a /etc/shells
-chsh -s "$FISH"
-
-# 5. Clone and link (bash is fine here)
 git clone https://github.com/michaelmoschitto/dotfiles.git ~/projects/dotfiles
-DOTFILES="$HOME/projects/dotfiles"
-mkdir -p ~/.config ~/.config/gh ~/.cursor/skills ~/.claude/skills ~/.codex/skills
-
-ln -sf "$DOTFILES/.config/fish" ~/.config/fish
-ln -sf "$DOTFILES/.config/starship.toml" ~/.config/starship.toml
-ln -sf "$DOTFILES/.config/nvim" ~/.config/nvim
-ln -sf "$DOTFILES/.config/zellij" ~/.config/zellij
-ln -sf "$DOTFILES/.config/gh/config.yml" ~/.config/gh/config.yml
-ln -sf "$DOTFILES/.gitconfig" ~/.gitconfig
-
-# Shared skills → every agent; tool-specific → that agent only
-for skill in "$DOTFILES"/skills/shared/*/; do
-  [ -d "$skill" ] || continue
-  name="$(basename "$skill")"
-  ln -sfn "$skill" ~/.cursor/skills/"$name"
-  ln -sfn "$skill" ~/.claude/skills/"$name"
-  ln -sfn "$skill" ~/.codex/skills/"$name"
-done
-for skill in "$DOTFILES"/skills/cursor/*/; do
-  [ -d "$skill" ] && ln -sfn "$skill" ~/.cursor/skills/"$(basename "$skill")"
-done
-for skill in "$DOTFILES"/skills/claude/*/; do
-  [ -d "$skill" ] && ln -sfn "$skill" ~/.claude/skills/"$(basename "$skill")"
-done
-for skill in "$DOTFILES"/skills/codex/*/; do
-  [ -d "$skill" ] && ln -sfn "$skill" ~/.codex/skills/"$(basename "$skill")"
-done
-
-# 6. Fish plugins — run inside fish
-fish -c 'curl -sL https://raw.githubusercontent.com/jorgebucaran/fisher/main/functions/fisher.fish | source; and fisher update'
-
-# 7. First nvim launch installs LazyVim plugins; authenticate gh
-nvim +qa
-gh auth login
-```
-
-### iTerm2
-
-- Set the profile font to **FiraCode Nerd Font**.
-- For Option+Left/Right word jumps (and Zellij Alt keys later): Profiles → Keys →
-  set Left/Right Option to **Esc+** or **Meta**.
-
-### Language runtimes (mise)
-
-Install tools on demand; this repo only activates mise from fish:
-
-```bash
-mise use -g node@lts
-mise use -g python@latest
-# mise use -g go@latest
-# mise use -g rust@latest
-```
-
-### Optional packages
-
-Install only when you need them:
-
-```bash
-brew install zellij          # multiplexer (config already in this repo)
-# brew install --cask bitwarden
-# brew install --cask claude-code@latest
-# brew install --cask codex
-```
-
-Or run the all-in-one script (installs packages, SSH key, fish login shell, symlinks, fisher, nvim):
-
-```bash
 bash ~/projects/dotfiles/setup.sh
 ```
 
-## Per-tool notes
+The script installs core brew packages, creates an SSH key + Keychain entry,
+sets fish as the login shell, symlinks configs, runs fisher, and boots nvim.
 
-### Fish (`.config/fish/`)
+**After setup**
 
-Tracked **lockfile-only**: `config.fish` and `fish_plugins`. Fisher installs the
-rest under `functions/`, `conf.d/`, etc. (gitignored).
+1. Paste `~/.ssh/id_ed25519.pub` into GitHub twice: **Authentication** + **Signing**  
+   (`pbcopy < ~/.ssh/id_ed25519.pub` → [SSH keys](https://github.com/settings/ssh/new))
+2. iTerm → Profiles → Text → font **FiraCode Nerd Font**
+3. iTerm → Profiles → Keys → Left/Right Option → **Esc+** (Alt for fish/nvim/zellij)
+4. Cursor terminal is set to fish in user settings; open a new terminal tab
 
-Plugins: `fisher`, `patrickf1/fzf.fish`, `catppuccin/fish`, `jhillyerd/plugin-git`.
+**Optional**
 
-Abbreviations: `vim→nvim`, `ls→eza`, `cat→bat`, `cd→z`, `grep→rg`, `top→btm`,
-`du→dust`.
+```bash
+brew install zellij
+mise use -g bun@latest          # updates .config/mise/config.toml — commit it
+# Raycast → Export Quicklinks → raycast/quicklinks.json
+```
 
-### Git (`.gitconfig`)
+## Notes
 
-Identity + **SSH commit signing** (`gpg.format = ssh`). Passphrases stay in the
-macOS Keychain via `ssh-add --apple-use-keychain`. No GPG Suite required.
+### Fish
 
-### Neovim (`.config/nvim/`) — LazyVim
+Lockfile-only: `config.fish` + `fish_plugins`. Fisher fills the rest (`fisher update`).
 
-Standard LazyVim layout. Extras enabled:
+| You type | Becomes |
+| -------- | ------- |
+| `cd` | `z` (zoxide) |
+| `ls` / `ll` | `eza` |
+| `cat` | `bat` |
+| `vim` | `nvim` |
+| `grep` | `rg` |
+| `top` / `du` | `btm` / `dust` |
 
-| Category | Extra | Notes |
-| -------- | ----- | ----- |
-| AI | `ai.claudecode` | Claude Code integration |
-| Editor | dial, fzf, inc-rename, neo-tree, outline, snacks_picker | |
-| Lang | go, json, markdown, python, rust, sql, typescript, yaml | no Java/toml |
-| Test | `test.core` | neotest |
-| Util | `util.dot`, `util.octo` | |
+Also: fzf.fish (Ctrl+R history, etc.) and `g…` git abbrs from plugin-git.
 
-Obsidian is stubbed off until you set a vault path in
-`.config/nvim/lua/plugins/obsidian.lua`.
+### mise
 
-### Zellij (`.config/zellij/`)
+Activated from fish. Global versions live in `.config/mise/config.toml`.  
+`mise use -g <tool>@<ver>` → commit the file.
 
-Config is ready; install the binary when you want a multiplexer. Works in iTerm;
-tune Option-as-Meta so Alt bindings do not fight word navigation.
+### Git
 
-### AI skills (`skills/`)
+SSH commit signing (`gpg.format = ssh`). Keychain via `ssh-add --apple-use-keychain`.  
+No GPG Suite.
 
-One copy under `skills/shared/` is linked into Cursor, Claude, and Codex.
-Tool-only skills live under `skills/{cursor,claude,codex}/`. See
-[`skills/README.md`](skills/README.md).
+### Neovim
 
-### Raycast
+LazyVim. Extras: snacks picker, neo-tree, dial, languages (go/rust/python/ts/sql/… — no Java), Claude Code, octo, neotest.
 
-Quicklinks (and optionally snippets) are versioned as JSON under
-[`raycast/`](raycast/). Export/import from the Raycast command palette — see
-[`raycast/README.md`](raycast/README.md). Full `.rayconfig` backups stay out of
-git (encrypted, can include secrets).
+**Full key map:** [`.config/nvim/CHEATSHEET.md`](.config/nvim/CHEATSHEET.md) — written for vim-motions-in-Cursor → full Neovim (file tree, LSP, harpoon, multicursor, …).
+
+| Keys | Action |
+| ---- | ------ |
+| `Space Space` | Find files |
+| `Space e` | File tree (`z` collapse / `Z` expand all) |
+| `Space /` | Grep project |
+| `Space B` / `Space 1..9` | Harpoon add / jump |
+
+Press `Space` alone for the which-key menu. Obsidian is stubbed until you set a vault path.
+
+### Skills & Raycast
+
+- `skills/shared/` → symlinked into Cursor, Claude, and Codex (DRY)
+- Quicklinks: edit/import `raycast/quicklinks.json` — see [`raycast/README.md`](raycast/README.md)
 
 ### Keyboard
 
-**ZSA Moonlander** — publish your layout in Oryx and link it above.
+ZSA Moonlander — add Oryx URL here when ready.
 
 ## Updating
 
-Edits are live through the symlinks. Save with git:
+Edits apply live through symlinks:
 
 ```bash
 cd ~/projects/dotfiles
-git pull
-# edit configs...
-git add -A && git commit -m "Update <tool> config" && git push
-
-# After editing fish_plugins
-fisher update
-
-# After Neovim plugin changes
-nvim +"Lazy sync" +qa
+# edit…
+git add -A && git commit -m "Update <tool>" && git push
+fisher update                 # after fish_plugins changes
+nvim +"Lazy sync" +qa         # after plugin changes
 ```
 
-## What's intentionally not tracked
+## Not tracked
 
-- Fisher-installed fish files (`fisher update` restores them)
-- Neovim plugin data (`~/.local/share/nvim/`)
-- Zellij `*.bak` backups
-- Raycast runtime data and tokens
-- Claude / Codex / Cursor app state (skills come from `skills/` via symlinks)
-- Secrets (gh token lives in the system keychain)
+Fisher install trees · Neovim plugin data · Zellij `*.bak` · Raycast `.rayconfig` /
+tokens · Claude/Codex/Cursor app state · secrets (gh uses Keychain)

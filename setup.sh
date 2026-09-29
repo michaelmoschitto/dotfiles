@@ -75,6 +75,10 @@ backup "$HOME/.config/nvim"
 backup "$HOME/.config/zellij"
 backup "$HOME/.config/gh/config.yml"
 backup "$HOME/.gitconfig"
+backup "$HOME/.config/mise/config.toml"
+backup "$HOME/.zshrc"
+
+mkdir -p "$HOME/.config/mise"
 
 ln -sfn "$DOTFILES/.config/fish" "$HOME/.config/fish"
 ln -sfn "$DOTFILES/.config/starship.toml" "$HOME/.config/starship.toml"
@@ -82,6 +86,8 @@ ln -sfn "$DOTFILES/.config/nvim" "$HOME/.config/nvim"
 ln -sfn "$DOTFILES/.config/zellij" "$HOME/.config/zellij"
 ln -sfn "$DOTFILES/.config/gh/config.yml" "$HOME/.config/gh/config.yml"
 ln -sfn "$DOTFILES/.gitconfig" "$HOME/.gitconfig"
+ln -sfn "$DOTFILES/.config/mise/config.toml" "$HOME/.config/mise/config.toml"
+ln -sfn "$DOTFILES/.zshrc" "$HOME/.zshrc"
 
 # Skills: shared → all agents; tool-specific → that agent
 link_skills() {
