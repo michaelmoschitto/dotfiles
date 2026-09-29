@@ -103,6 +103,21 @@ LazyVim. Extras: snacks picker, neo-tree, dial, languages (go/rust/python/ts/sql
 
 Press `Space` alone for the which-key menu. Obsidian is stubbed until you set a vault path.
 
+### Zellij
+
+Multiplexer (panes + tabs). Config clears defaults — use **this** key map, not stock Zellij docs.
+
+**Full key map:** [`.config/zellij/CHEATSHEET.md`](.config/zellij/CHEATSHEET.md)
+
+| Keys | Action |
+| ---- | ------ |
+| `zellij` | Start session |
+| `⌥+hjkl` | Move focus |
+| `⌥+n` | New pane |
+| `Ctrl+s` | Scroll / copy mode |
+| `Ctrl+p` / `Ctrl+t` | Pane / tab mode |
+| `Ctrl+q` | Quit |
+
 ### Skills & Raycast
 
 - `skills/shared/` → symlinked into Cursor, Claude, and Codex (DRY)
