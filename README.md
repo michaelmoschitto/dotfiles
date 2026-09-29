@@ -15,7 +15,7 @@ Mirror-of-home layout: configs live here and are **symlinked** into `~` / `~/.co
 | GitHub | gh | `.config/gh/` |
 | AI skills | shared → Cursor/Claude/Codex | `skills/` |
 | Launcher | Raycast | `raycast/quicklinks.json` |
-| Multiplexer | zellij (optional) | `.config/zellij/` |
+| Multiplexer | zellij | `.config/zellij/` |
 
 ## Layout
 
@@ -31,7 +31,7 @@ dotfiles/
     ├── mise/config.toml
     ├── starship.toml
     ├── nvim/                # LazyVim
-    ├── zellij/              # optional
+    ├── zellij/
     └── gh/config.yml
 ```
 
@@ -42,7 +42,7 @@ git clone https://github.com/michaelmoschitto/dotfiles.git ~/projects/dotfiles
 bash ~/projects/dotfiles/setup.sh
 ```
 
-The script installs core brew packages, creates an SSH key + Keychain entry,
+The script installs core brew packages (including zellij), creates an SSH key + Keychain entry,
 sets fish as the login shell, symlinks configs, runs fisher, and boots nvim.
 
 **After setup**
@@ -52,11 +52,11 @@ sets fish as the login shell, symlinks configs, runs fisher, and boots nvim.
 2. iTerm → Profiles → Text → font **FiraCode Nerd Font**
 3. iTerm → Profiles → Keys → Left/Right Option → **Esc+** (Alt for fish/nvim/zellij)
 4. Cursor terminal is set to fish in user settings; open a new terminal tab
+5. Start a multiplexer session with `zellij` (`Ctrl+s` = scroll/copy mode)
 
 **Optional**
 
 ```bash
-brew install zellij
 mise use -g bun@latest          # updates .config/mise/config.toml — commit it
 # Raycast → Export Quicklinks → raycast/quicklinks.json
 ```

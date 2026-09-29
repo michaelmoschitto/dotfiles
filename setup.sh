@@ -11,7 +11,7 @@ if [[ ! -d "$DOTFILES" ]]; then
 fi
 
 echo "==> Installing core brew packages"
-brew install fish starship neovim fzf zoxide eza bat ripgrep fd bottom dust jq
+brew install fish starship neovim fzf zoxide eza bat ripgrep fd bottom dust jq zellij
 brew install --cask font-fira-code-nerd-font
 # iTerm + Raycast already present on this machine; install via cask only if missing
 [[ -d /Applications/iTerm.app ]] || brew install --cask iterm2
