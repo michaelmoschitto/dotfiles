@@ -154,13 +154,14 @@ Completion (blink.cmp): `Ctrl+j` / `Ctrl+k` next / prev item *(custom)*.
 
 | Keys | Action |
 | ---- | ------ |
-| `Space gg` | Lazygit |
+| `Space gD` | Diff (stock LazyVim picker — line-by-line) |
 | `Space ghs` | Stage hunk |
 | `Space ghr` | Reset hunk |
 | `Space ghp` | Preview hunk |
 | `Space ghb` | Blame line |
 | `]h` / `[h` | Next / prev hunk (gitsigns) |
 | `Space ge` | Neo-tree git status |
+| `Space gg` | Lazygit *(needs `brew install lazygit` — not in setup.sh yet)* |
 
 ---
 
