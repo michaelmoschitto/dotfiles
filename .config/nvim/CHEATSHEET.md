@@ -126,7 +126,7 @@ In pickers: type to filter, `Enter` to open, `Ctrl+j`/`Ctrl+k` often move (depen
 
 ## LSP / code intelligence
 
-Works in files with a language server (Go, Rust, Python, TS, etc. from your LazyVim extras).
+Works in files with a language server (Rust, Python, TS, etc. from your LazyVim extras).
 
 | Keys | Action |
 | ---- | ------ |
