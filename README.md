@@ -90,7 +90,7 @@ No GPG Suite.
 
 ### Neovim
 
-LazyVim. Extras: snacks picker, neo-tree, dial, languages (go/rust/python/ts/sql/… — no Java), Claude Code, octo, neotest.
+LazyVim. Extras: snacks picker, neo-tree, dial, languages (rust/python/ts/sql/… — no Go/Java), Claude Code, octo, neotest.
 
 **Full key map:** [`.config/nvim/CHEATSHEET.md`](.config/nvim/CHEATSHEET.md) — written for vim-motions-in-Cursor → full Neovim (file tree, LSP, harpoon, multicursor, …).
 
