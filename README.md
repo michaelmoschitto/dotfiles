@@ -75,6 +75,7 @@ Lockfile-only: `config.fish` + `fish_plugins`. Fisher fills the rest (`fisher up
 | `vim` | `nvim` |
 | `grep` | `rg` |
 | `top` / `du` | `btm` / `dust` |
+| `gwt mike-worktree` | `git worktree add -b mike-worktree ../mike-worktree origin/main` |
 
 Also: fzf.fish (Ctrl+R history, etc.) and `g…` git abbrs from plugin-git.
 
