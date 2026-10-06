@@ -38,16 +38,16 @@ return {
     },
 
     keys = {
-        -- TODO, this binding is broken, something from LazyVim is overriding it.
+        -- Avoid gD: LazyVim TypeScript (vtsls) maps buffer-local gD to Goto Source Definition.
         {
-            "gD",
+            "gp",
             function()
                 require("lspeek").peek_definition()
             end,
             desc = "Peek Definition (lspeek)",
         },
         {
-            "gT",
+            "gP",
             function()
                 require("lspeek").peek_type_definition()
             end,

@@ -132,8 +132,8 @@ Works in files with a language server (Rust, Python, TS, etc. from your LazyVim 
 | ---- | ------ |
 | `gd` | Go to definition |
 | `gr` | References |
-| `gD` | Peek definition *(lspeek; may conflict — see note)* |
-| `gT` | Peek type definition *(lspeek)* |
+| `gp` | Peek definition (lspeek) |
+| `gP` | Peek type definition (lspeek) |
 | `K` | Hover docs |
 | `Space ca` | Code action |
 | `Space cr` | Rename (inc-rename) |
