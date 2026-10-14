@@ -1,12 +1,22 @@
 return {
     "nvim-neo-tree/neo-tree.nvim",
     opts = {
+        filesystem = {
+            filtered_items = {
+                hide_by_name = {
+                    "node_modules",
+                    ".git",
+                    ".next",
+                    "dist",
+                    ".venv",
+                    "__pycache__",
+                },
+            },
+        },
         commands = {
             toggle_expand_all = function(state)
                 local common = require("neo-tree.sources.common.commands")
-                -- Use the filesystem command when possible so expand-all
-                -- prefetches unloaded directories (common.expand_all alone
-                -- only opens folders already scanned into memory).
+                -- Prefer filesystem expand so unloaded dirs are prefetched.
                 local expand_all = common.expand_all_nodes
                 local ok, fs_commands = pcall(require, "neo-tree.sources.filesystem.commands")
                 if ok and state.name == "filesystem" then
