@@ -1,5 +1,26 @@
 return {
     "nvim-neo-tree/neo-tree.nvim",
+    keys = {
+        -- Replace LazyVim's <leader>e → <leader>fe remap (toggle).
+        { "<leader>e", false },
+        -- Open/focus the tree on the current file (does not toggle closed).
+        -- Use <leader>fe to toggle, or q inside Neo-tree to close.
+        {
+            "<leader>e",
+            function()
+                local reveal_file = vim.fn.expand("%:p")
+                if reveal_file ~= "" and vim.fn.filereadable(reveal_file) == 1 then
+                    require("neo-tree.command").execute({
+                        reveal_file = reveal_file,
+                        reveal_force_cwd = true,
+                    })
+                else
+                    require("neo-tree.command").execute({ dir = LazyVim.root() })
+                end
+            end,
+            desc = "Reveal File in NeoTree",
+        },
+    },
     opts = {
         filesystem = {
             filtered_items = {
