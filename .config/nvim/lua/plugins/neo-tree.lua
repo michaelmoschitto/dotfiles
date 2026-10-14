@@ -1,23 +1,23 @@
 return {
     "nvim-neo-tree/neo-tree.nvim",
     opts = {
+        commands = {
+            toggle_expand_all = function(state)
+                local commands = require("neo-tree.sources.common.commands")
+                -- Don't infer from tree state: follow_current_file keeps paths
+                -- expanded, so a detection-based toggle only ever collapses.
+                if state._toggle_expand_all then
+                    commands.close_all_nodes(state)
+                    state._toggle_expand_all = false
+                else
+                    commands.expand_all_nodes(state)
+                    state._toggle_expand_all = true
+                end
+            end,
+        },
         window = {
             mappings = {
-                ["z"] = function(state)
-                    local commands = require("neo-tree.sources.common.commands")
-                    local any_expanded = false
-                    for _, node in ipairs(state.tree:get_nodes()) do
-                        if node:is_expanded() then
-                            any_expanded = true
-                            break
-                        end
-                    end
-                    if any_expanded then
-                        commands.close_all_nodes(state)
-                    else
-                        commands.expand_all_nodes(state)
-                    end
-                end,
+                ["z"] = "toggle_expand_all",
             },
         },
     },
